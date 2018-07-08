@@ -10,7 +10,7 @@ pipeline {
   stages {
     stage('Install Gems') {
       steps {
-        sh "bundle install"
+        sh "ruby -v"
       }
     }
     stage('Env') {
