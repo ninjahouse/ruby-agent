@@ -16,6 +16,7 @@ pipeline {
   }
     stage('Deliver') {
       steps {
+        cucumber classifications: [[key: '', value: '']], fileIncludePattern: '**/*.json', jsonReportDirectory: 'log', sortingMethod: 'ALPHABETICAL'
         input message: 'Finished using the web site?  (Click "Proceed" to continue)'
       }
     }

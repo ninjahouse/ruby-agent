@@ -1,0 +1,4 @@
+---
+default: -p jenkins -p bdd
+bdd: --format pretty
+jenkins: --format json --out log/features.json
