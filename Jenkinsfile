@@ -1,7 +1,8 @@
 pipeline {
   agent {
     docker {
-       image 'rtyler/rvm:2.3.0'
+       image 'node:6-alpine'
+       args '-p 3000:3000'
     }
   }
   environment {
@@ -10,14 +11,15 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        rvm 'ruby --version'
+        sh 'npm install'
       }
     }
   }
     stage('Deliver') {
       steps {
-        rvm 'gem env'
+        // sh './jenkins/scripts/deliver.sh'
         input message: 'Finished using the web site?  (Click "Proceed" to continue)'
+        // sh './jenkins/scripts/kill.sh'
       }
     }
   }
