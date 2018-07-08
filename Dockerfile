@@ -4,7 +4,6 @@ RUN mkdir /test
 WORKDIR /test
 COPY Gemfile /test/Gemfile
 COPY Gemfile.lock /test/Gemfile.lock
-RUN bundle install
 COPY . /test
 
 
