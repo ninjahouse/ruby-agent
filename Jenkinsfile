@@ -1,9 +1,5 @@
 pipeline {
-  agent {
-    docker {
-       image 'ruby'
-    }
-  }
+  agent { dockerfile true }
   environment {
     CI = true
   }
