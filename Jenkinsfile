@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-       image 'rtyler/rvm:2.3.0'
+       image 'ruby'
     }
   }
   environment {
@@ -10,12 +10,12 @@ pipeline {
   stages {
     stage('Install Gems') {
       steps {
-        rvm "bundle install"
+        sh "bundle install"
       }
     }
     stage('Env') {
       steps {
-        rvm "gem env"
+        sh "gem env"
       }
   }
     stage('Deliver') {
