@@ -6,12 +6,12 @@ pipeline {
   stages {
     stage('Install Gems') {
       steps {
-        sh "ruby -v"
+        sh "bundle install"
       }
     }
     stage('Env') {
       steps {
-        sh "gem env"
+        sh "bundle exec cucumber"
       }
   }
     stage('Deliver') {
