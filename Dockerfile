@@ -29,12 +29,12 @@ RUN CD_VERSION=$(if [ ${CHROME_DRIVER_VERSION:-latest} = "latest" ]; then echo $
   && chmod 755 /opt/selenium/chromedriver-$CD_VERSION \
   && ln -fs /opt/selenium/chromedriver-$CD_VERSION /usr/bin/chromedriver
 
-COPY generate_config /opt/bin/generate_config
+# COPY generate_config /opt/bin/generate_config
 
-#=================================
-# Chrome Launch Script Modification
-#=================================
-COPY chrome_launcher.sh /opt/google/chrome/google-chrome
+# #=================================
+# # Chrome Launch Script Modification
+# #=================================
+# COPY chrome_launcher.sh /opt/google/chrome/google-chrome
 
-# Generating a default config during build time
-RUN /opt/bin/generate_config > /opt/selenium/config.json
+# # Generating a default config during build time
+# RUN /opt/bin/generate_config > /opt/selenium/config.json

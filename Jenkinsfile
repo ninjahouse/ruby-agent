@@ -4,9 +4,9 @@ pipeline {
     CI = true
   }
   stages {
-    stage('Install Gems') {
+    stage('Chrome version') {
       steps {
-        sh "bundle install"
+        sh "chromedriver --version"
       }
     }
     stage('Env') {
