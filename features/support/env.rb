@@ -8,5 +8,5 @@ Capybara.register_driver :selenium do |app|
 end
 
 Capybara.configure do |c|
-  c.default_driver = :selenium_chrome_headless
+  c.default_driver = :selenium
 end
