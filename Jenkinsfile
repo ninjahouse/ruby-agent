@@ -6,7 +6,7 @@ pipeline {
   stages {
     stage('Chrome version') {
       steps {
-        sh "chromedriver --version"
+        sh "ping 8.8.8.8"
       }
     }
     stage('Env') {
