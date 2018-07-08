@@ -6,7 +6,7 @@ pipeline {
   stages {
     stage('Chrome version') {
       steps {
-        sh "ping 8.8.8.8"
+        sh "phantomjs --version"
       }
     }
     stage('Env') {
