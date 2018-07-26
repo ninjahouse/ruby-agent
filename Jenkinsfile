@@ -20,7 +20,7 @@ pipeline {
           try {
             sh "bundle exec cucumber"
             report()
-          } catch {
+          } finally {
             report()
           }
         }
