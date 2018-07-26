@@ -16,10 +16,12 @@ pipeline {
     }
     stage('Functional Tests') {
       steps {
-        try {
-            sh "bundle exec cucumber"
-        } catch (Exception e) {
-            sh 'Deu ruim!'
+        script {
+          try {
+              sh "bundle exec cucumber"
+          } catch (Exception e) {
+              sh 'Deu ruim!'
+          }
         }
       }
     }
