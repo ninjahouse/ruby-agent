@@ -1,5 +1,4 @@
-FROM freshbooks/ruby
-
+FROM ruby:2.3.3
 RUN apt-get update -qq && apt-get install -y build-essential libpq-dev
 RUN mkdir /test
 WORKDIR /test
@@ -7,27 +6,33 @@ COPY Gemfile /test/Gemfile
 COPY Gemfile.lock /test/Gemfile.lock
 COPY . /test
 
-ARG CHROME_VERSION="google-chrome-stable"
-
 ENV DEBIAN_FRONTEND noninteractive
+ENV DEBCONF_NONINTERACTIVE_SEEN true
 
-ENV buildDependencies wget unzip
+# Set timezone
+RUN echo "US/Eastern" > /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata
 
-RUN apt-get update -yqq && apt-get install -fyqq ${buildDependencies}
+RUN apt-get update -y && \
+  apt-get install -y unzip xvfb \
+  qt5-default libqt5webkit5-dev \
+  gstreamer1.0-plugins-base \
+  gstreamer1.0-tools gstreamer1.0-x \
+  freetds-dev \
+  libnss3 libxi6 libgconf-2-4
 
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-  && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
-  && apt-get update -qqy \
-  && apt-get -qqy install \
-    ${CHROME_VERSION:-google-chrome-stable} \
-  && rm /etc/apt/sources.list.d/google-chrome.list \
-  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* \
-  && google-chrome --version
+WORKDIR /usr/src/app/
 
-RUN  wget --no-check-certificate https://chromedriver.storage.googleapis.com/2.36/chromedriver_linux64.zip \
-  && unzip chromedriver_linux64.zip \
-  && rm chromedriver_linux64.zip \
-  && mv -f chromedriver /usr/local/share/ \
-  && chmod +x /usr/local/share/chromedriver \
-  && ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver \
-  && chromedriver -v
+# install required gem files for Capybara
+COPY ./Gemfile /usr/src/app/
+RUN gem install bundler
+RUN bundle install
+
+# install chrome
+RUN apt-get update -y && \
+  wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+  dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install
+
+# install chromedriver and place it ib path
+RUN wget https://chromedriver.storage.googleapis.com/2.38/chromedriver_linux64.zip && \
+  unzip chromedriver_linux64.zip && \
+  mv chromedriver /usr/local/bundle/bin/
