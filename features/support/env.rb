@@ -5,9 +5,10 @@ require 'selenium-webdriver'
 Capybara.javascript_driver = :selenium
 Capybara.run_server = false
 
-# Configure the Chrome driver capabilities & register
-args = ['--no-default-browser-check', '--start-maximized']
-caps = Selenium::WebDriver::Remote::Capabilities.chrome('chromeOptions' => { 'args' => args })
+args = ['--no-default-browser-check']
+caps = Selenium::WebDriver::Remote::Capabilities.chrome(
+  'chromeOptions' => { 'args' => args }
+)
 Capybara.register_driver :selenium do |app|
   Capybara::Selenium::Driver.new(
     app,
