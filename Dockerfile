@@ -1,5 +1,5 @@
 FROM ruby:2.3.3
-RUN apt-get update -qq && apt-get install -y build-essential libpq-dev unzip curl
+RUN apt-get update -qq && apt-get install -y build-essential libpq-dev
 RUN mkdir /test
 WORKDIR /test
 COPY Gemfile /test/Gemfile
@@ -29,8 +29,8 @@ RUN apt-get -yqq update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Supervisor
-RUN curl -sS -o - https://bootstrap.pypa.io/ez_setup.py | python && \
-    easy_install -q supervisor
+# RUN curl -sS -o - https://bootstrap.pypa.io/ez_setup.py | python && \
+#     easy_install -q supervisor
 
 # Install Chrome WebDriver
 RUN CHROMEDRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE` && \
@@ -49,8 +49,8 @@ RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-ke
     rm -rf /var/lib/apt/lists/*
 
 # Configure Supervisor
-ADD ./etc/supervisord.conf /etc/
-ADD ./etc/supervisor /etc/supervisor
+# ADD ./etc/supervisord.conf /etc/
+# ADD ./etc/supervisor /etc/supervisor
 
 # Default configuration
 ENV DISPLAY :20.0
@@ -62,6 +62,6 @@ ENV CHROMEDRIVER_EXTRA_ARGS ''
 
 EXPOSE 4444
 
-VOLUME [ "/var/log/supervisor" ]
+# VOLUME [ "/var/log/supervisor" ]
 
-CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
+# CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
