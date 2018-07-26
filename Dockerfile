@@ -44,7 +44,7 @@ ENV CHROMEDRIVER_PORT 4444
 ENV CHROMEDRIVER_WHITELISTED_IPS "127.0.0.1"
 
 # Set working directory to canonical directory
-WORKDIR /usr/src/app
+# WORKDIR /usr/src/app
 
 # Adds ability to run xvfb in daemonized mode
 ADD xvfb_init /etc/init.d/xvfb
