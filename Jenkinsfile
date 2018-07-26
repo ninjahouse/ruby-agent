@@ -19,9 +19,8 @@ pipeline {
         script {
           try {
             sh "bundle exec cucumber"
-            report()
           } finally {
-            report()
+            cucumber classifications: [[key: '', value: '']], fileIncludePattern: '**/*.json', jsonReportDirectory: 'log', sortingMethod: 'ALPHABETICAL'
           }
         }
         
@@ -33,8 +32,4 @@ pipeline {
       }
     }
   }
-}
-
-def report(String commands) {
-    cucumber classifications: [[key: '', value: '']], fileIncludePattern: '**/*.json', jsonReportDirectory: 'log', sortingMethod: 'ALPHABETICAL'
 }
