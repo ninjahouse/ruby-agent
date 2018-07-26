@@ -16,7 +16,9 @@ pipeline {
     }
     stage('Functional Tests') {
       steps {
-        sh "bundle exec cucumber"
+        try {
+          sh "bundle exec cucumber"
+        }
       }
     }
     stage('Reports') {
