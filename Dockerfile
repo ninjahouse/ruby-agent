@@ -5,3 +5,4 @@ WORKDIR /test
 COPY Gemfile /test/Gemfile
 COPY Gemfile.lock /test/Gemfile.lock
 COPY . /test
+
