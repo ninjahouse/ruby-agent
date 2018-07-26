@@ -1,5 +1,8 @@
 pipeline {
-  agent { dockerfile true }
+  agent { 
+    dockerfile true
+    args '--link selenium' 
+  }
   environment {
     CI = true
   }
