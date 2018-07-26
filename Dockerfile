@@ -6,30 +6,62 @@ COPY Gemfile /test/Gemfile
 COPY Gemfile.lock /test/Gemfile.lock
 COPY . /test
 
+ENV DEBIAN_FRONTEND noninteractive
+ENV DEBCONF_NONINTERACTIVE_SEEN true
 
-ARG PHANTOM_JS_VERSION
-ENV PHANTOM_JS_VERSION ${PHANTOM_JS_VERSION:-2.1.1-linux-x86_64}
+# Set timezone
+RUN echo "US/Eastern" > /etc/timezone && \
+    dpkg-reconfigure --frontend noninteractive tzdata
 
-# Install runtime dependencies
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        bzip2 \
-        libfontconfig \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+# Create a default user
+RUN useradd automation --shell /bin/bash --create-home
 
-RUN set -x  \
- && apt-get update \
- && apt-get install -y --no-install-recommends \
-        curl \
- && mkdir /tmp/phantomjs \
- && curl -L https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${PHANTOM_JS_VERSION}.tar.bz2 \
-        | tar -xj --strip-components=1 -C /tmp/phantomjs \
- && mv /tmp/phantomjs/bin/phantomjs /usr/local/bin \
- && curl -Lo /tmp/dumb-init.deb https://github.com/Yelp/dumb-init/releases/download/v1.1.3/dumb-init_1.1.3_amd64.deb \
- && dpkg -i /tmp/dumb-init.deb \
- && apt-get purge --auto-remove -y \
-        curl \
- && apt-get clean \
- && rm -rf /tmp/* /var/lib/apt/lists/*
+# Update the repositories
+# Install utilities
+# Install XVFB and TinyWM
+# Install fonts
+# Install Python
+RUN apt-get -yqq update && \
+    apt-get -yqq install curl unzip && \
+    apt-get -yqq install xvfb tinywm && \
+    apt-get -yqq install fonts-ipafont-gothic xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic && \
+    apt-get -yqq install python && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Supervisor
+RUN curl -sS -o - https://bootstrap.pypa.io/ez_setup.py | python && \
+    easy_install -q supervisor
+
+# Install Chrome WebDriver
+RUN CHROMEDRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE` && \
+    mkdir -p /opt/chromedriver-$CHROMEDRIVER_VERSION && \
+    curl -sS -o /tmp/chromedriver_linux64.zip http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \
+    unzip -qq /tmp/chromedriver_linux64.zip -d /opt/chromedriver-$CHROMEDRIVER_VERSION && \
+    rm /tmp/chromedriver_linux64.zip && \
+    chmod +x /opt/chromedriver-$CHROMEDRIVER_VERSION/chromedriver && \
+    ln -fs /opt/chromedriver-$CHROMEDRIVER_VERSION/chromedriver /usr/local/bin/chromedriver
+
+# Install Google Chrome
+RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get -yqq update && \
+    apt-get -yqq install google-chrome-stable && \
+    rm -rf /var/lib/apt/lists/*
+
+# Configure Supervisor
+ADD ./etc/supervisord.conf /etc/
+ADD ./etc/supervisor /etc/supervisor
+
+# Default configuration
+ENV DISPLAY :20.0
+ENV SCREEN_GEOMETRY "1440x900x24"
+ENV CHROMEDRIVER_PORT 4444
+ENV CHROMEDRIVER_WHITELISTED_IPS "127.0.0.1"
+ENV CHROMEDRIVER_URL_BASE ''
+ENV CHROMEDRIVER_EXTRA_ARGS ''
+
+EXPOSE 4444
+
+VOLUME [ "/var/log/supervisor" ]
+
+CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
