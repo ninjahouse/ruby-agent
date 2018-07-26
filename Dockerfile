@@ -6,62 +6,35 @@ COPY Gemfile /test/Gemfile
 COPY Gemfile.lock /test/Gemfile.lock
 COPY . /test
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV DEBCONF_NONINTERACTIVE_SEEN true
+ARG DEBIAN_FRONTEND=noninteractive
 
-# Set timezone
-RUN echo "US/Eastern" > /etc/timezone && \
-    dpkg-reconfigure --frontend noninteractive tzdata
+RUN apt-get update -qqy \
+  && apt-get -qqy install \
+       dumb-init gnupg wget ca-certificates apt-transport-https \
+       ttf-wqy-zenhei \
+  && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-# Create a default user
-RUN useradd automation --shell /bin/bash --create-home
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+  && echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
+  && apt-get update -qqy \
+  && apt-get -qqy install google-chrome-unstable \
+  && rm /etc/apt/sources.list.d/google-chrome.list \
+  && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-# Update the repositories
-# Install utilities
-# Install XVFB and TinyWM
-# Install fonts
-# Install Python
-RUN apt-get -yqq update && \
-    apt-get -yqq install curl unzip && \
-    apt-get -yqq install xvfb tinywm && \
-    apt-get -yqq install fonts-ipafont-gothic xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic && \
-    apt-get -yqq install python && \
-    rm -rf /var/lib/apt/lists/*
+RUN useradd headless --shell /bin/bash --create-home \
+  && usermod -a -G sudo headless \
+  && echo 'ALL ALL = (ALL) NOPASSWD: ALL' >> /etc/sudoers \
+  && echo 'headless:nopassword' | chpasswd
 
-# Install Supervisor
-# RUN curl -sS -o - https://bootstrap.pypa.io/ez_setup.py | python && \
-#     easy_install -q supervisor
+RUN mkdir /data && chown -R headless:headless /data
 
-# Install Chrome WebDriver
-RUN CHROMEDRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE` && \
-    mkdir -p /opt/chromedriver-$CHROMEDRIVER_VERSION && \
-    curl -sS -o /tmp/chromedriver_linux64.zip http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \
-    unzip -qq /tmp/chromedriver_linux64.zip -d /opt/chromedriver-$CHROMEDRIVER_VERSION && \
-    rm /tmp/chromedriver_linux64.zip && \
-    chmod +x /opt/chromedriver-$CHROMEDRIVER_VERSION/chromedriver && \
-    ln -fs /opt/chromedriver-$CHROMEDRIVER_VERSION/chromedriver /usr/local/bin/chromedriver
+USER headless
 
-# Install Google Chrome
-RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-    echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list && \
-    apt-get -yqq update && \
-    apt-get -yqq install google-chrome-stable && \
-    rm -rf /var/lib/apt/lists/*
-
-# Configure Supervisor
-# ADD ./etc/supervisord.conf /etc/
-# ADD ./etc/supervisor /etc/supervisor
-
-# Default configuration
-ENV DISPLAY :20.0
-ENV SCREEN_GEOMETRY "1440x900x24"
-ENV CHROMEDRIVER_PORT 4444
-ENV CHROMEDRIVER_WHITELISTED_IPS "127.0.0.1"
-ENV CHROMEDRIVER_URL_BASE ''
-ENV CHROMEDRIVER_EXTRA_ARGS ''
-
-EXPOSE 4444
-
-# VOLUME [ "/var/log/supervisor" ]
-
-# CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--", \
+            "/usr/bin/google-chrome-unstable", \
+            "--disable-gpu", \
+            "--headless", \
+            "--disable-dev-shm-usage", \
+            "--remote-debugging-address=0.0.0.0", \
+            "--remote-debugging-port=9222", \
+            "--user-data-dir=/data"]
