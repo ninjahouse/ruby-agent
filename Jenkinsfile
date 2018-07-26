@@ -14,30 +14,27 @@ pipeline {
         sh "bundle install"
       }
     }
-
-    try {
-      stage('Functional Tests') {
-        steps {
-          sh "bundle exec cucumber"
+    stage('Tests') {
+      steps {
+        script {
+          try {
+            sh "bundle exec cucumber"
+            report()
+          } catch {
+            report()
+          }
         }
-      }
-      stage('Reports on Failed') {
-        steps {
-          cucumber classifications: [[key: '', value: '']], fileIncludePattern: '**/*.json', jsonReportDirectory: 'log', sortingMethod: 'ALPHABETICAL'
-        }
-      }
-    } catch (Exception e) {
-      stage('Reports on Passed') {
-        steps {
-          cucumber classifications: [[key: '', value: '']], fileIncludePattern: '**/*.json', jsonReportDirectory: 'log', sortingMethod: 'ALPHABETICAL'
-        }
+        
       }
     }
-
-    stage('Deliver') {
+    stage('Deploy to production?') {
       steps {
-        input message: 'Finished using the web site?  (Click "Proceed" to continue)'
+        input message: 'Testes finalizados deseja subir em produção?  (Clique em "Sim" para continuar)'
       }
     }
   }
+}
+
+def report(String commands) {
+    cucumber classifications: [[key: '', value: '']], fileIncludePattern: '**/*.json', jsonReportDirectory: 'log', sortingMethod: 'ALPHABETICAL'
 }
