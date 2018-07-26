@@ -1,5 +1,5 @@
-FROM ruby:2.3.3
-RUN apt-get update -qq && apt-get install -y build-essential libpq-dev
+FROM debian:stable-slim
+RUN apt-get update -qq && apt-get install -y build-essential libpq-dev ruby-full
 RUN mkdir /test
 WORKDIR /test
 COPY Gemfile /test/Gemfile
