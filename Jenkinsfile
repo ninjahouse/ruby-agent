@@ -19,6 +19,7 @@ pipeline {
         script {
           try {
               sh "bundle exec cucumber"
+          } catch () {
           }
         }
       }
