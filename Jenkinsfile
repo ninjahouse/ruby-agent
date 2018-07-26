@@ -14,18 +14,25 @@ pipeline {
         sh "bundle install"
       }
     }
-    stage('Functional Tests') {
-      steps {
-        script {
-          try {
-              sh "bundle exec cucumber"
-          } catch {}
+
+    script {
+      try {
+        stage('Functional Tests') {
+          steps {
+            sh "bundle exec cucumber"
+          }
         }
-      }
-    }
-    stage('Reports') {
-      steps {
-        cucumber classifications: [[key: '', value: '']], fileIncludePattern: '**/*.json', jsonReportDirectory: 'log', sortingMethod: 'ALPHABETICAL'
+        stage('Reports on Failed') {
+          steps {
+            cucumber classifications: [[key: '', value: '']], fileIncludePattern: '**/*.json', jsonReportDirectory: 'log', sortingMethod: 'ALPHABETICAL'
+          }
+        }
+      } catch (Exception e) {
+        stage('Reports on Passed') {
+          steps {
+            cucumber classifications: [[key: '', value: '']], fileIncludePattern: '**/*.json', jsonReportDirectory: 'log', sortingMethod: 'ALPHABETICAL'
+          }
+        }
       }
     }
     stage('Deliver') {
